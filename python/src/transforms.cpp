@@ -1029,6 +1029,30 @@ PyType_Slot py_custom_function_slots[] = {
     {0, 0}};
 
 void init_transforms(nb::module_& m) {
+  m.def(
+      "set_max_active_tasks",
+      &mx::set_max_active_tasks,
+      "n"_a,
+      nb::sig("def set_max_active_tasks(n: int) -> None"),
+      R"pbdoc(
+        Set the maximum number of in-flight tasks before an evaluation waits.
+
+        A task is a committed command buffer, or a batch of CPU dispatches.
+        The default comes from ``MLX_MAX_ACTIVE_TASKS`` (10 if unset). Raising
+        it keeps a deeper pipeline in flight, which helps when a single
+        evaluation dispatches far more work than the cap allows, at the cost of
+        the memory that in-flight work retains.
+
+        Args:
+            n (int): The maximum number of in-flight tasks, at least 1.
+      )pbdoc");
+  m.def(
+      "max_active_tasks",
+      &mx::max_active_tasks,
+      nb::sig("def max_active_tasks() -> int"),
+      R"pbdoc(
+        Get the maximum number of in-flight tasks before an evaluation waits.
+      )pbdoc");
   nb::class_<PyCustomFunction>(
       m,
       "custom_function",

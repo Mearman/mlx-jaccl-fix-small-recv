@@ -228,4 +228,13 @@ MLX_API std::function<std::vector<array>(const std::vector<array>&)> custom_vjp(
 MLX_API std::function<std::vector<array>(const std::vector<array>&)> checkpoint(
     std::function<std::vector<array>(const std::vector<array>&)> fun);
 
+/**
+ * The maximum number of in-flight tasks (committed command buffers, or batches
+ * of CPU dispatches) before an evaluation waits for one to complete. Defaults
+ * to the value of ``MLX_MAX_ACTIVE_TASKS`` (10 if unset). Larger values keep a
+ * deeper pipeline in flight, at the cost of the memory that work retains.
+ */
+MLX_API int max_active_tasks();
+MLX_API void set_max_active_tasks(int n);
+
 } // namespace mlx::core

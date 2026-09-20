@@ -237,5 +237,35 @@ class TestEval(mlx_tests.MLXTestCase):
             mx.synchronize(mx.cpu)
 
 
+    def test_max_active_tasks(self):
+        default = mx.max_active_tasks()
+        try:
+            mx.set_max_active_tasks(64)
+            self.assertEqual(mx.max_active_tasks(), 64)
+            mx.set_max_active_tasks(3)
+            self.assertEqual(mx.max_active_tasks(), 3)
+            # Values below one are clamped, never zero or negative.
+            mx.set_max_active_tasks(0)
+            self.assertEqual(mx.max_active_tasks(), 1)
+
+            # A chain deeper than the cap must still finish, and give the same
+            # answer whichever cap it ran under.
+            def chain():
+                x = mx.ones((4, 4))
+                for _ in range(200):
+                    x = x + 1
+                return x
+
+            for cap in (3, 64):
+                mx.set_max_active_tasks(cap)
+                x = chain()
+                mx.async_eval(x)
+                y = chain()
+                mx.eval(y)
+                self.assertTrue(mx.array_equal(x, y).item())
+                self.assertEqual(x[0, 0].item(), 201)
+        finally:
+            mx.set_max_active_tasks(default)
+
 if __name__ == "__main__":
     mlx_tests.MLXTestRunner()

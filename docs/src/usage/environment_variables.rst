@@ -105,6 +105,13 @@ users. Their behavior may change as the implementation evolves.
    Set the breadth-first-search width limit used when constructing an
    evaluation tape. The default is ``20``.
 
+.. envvar:: MLX_MAX_ACTIVE_TASKS
+
+   Set the maximum number of in-flight tasks (committed command buffers, or
+   batches of CPU dispatches) before an evaluation waits for one to complete.
+   The default is ``10``. Larger values increase the peak memory held by
+   in-flight work and delay when execution errors are reported.
+
 .. envvar:: MLX_MAX_OPS_PER_BUFFER
 
    Override the maximum number of operations encoded in one Metal command

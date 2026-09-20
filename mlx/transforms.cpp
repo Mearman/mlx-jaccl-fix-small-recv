@@ -1,4 +1,5 @@
 // Copyright © 2023-2024 Apple Inc.
+#include <atomic>
 #include <algorithm>
 #include <deque>
 #include <future>
@@ -22,7 +23,20 @@
 
 namespace mlx::core {
 
-static constexpr int MAX_ACTIVE_TASKS = 10;
+namespace {
+std::atomic<int>& max_active_tasks_value() {
+  static std::atomic<int> value{env::max_active_tasks()};
+  return value;
+}
+} // namespace
+
+int max_active_tasks() {
+  return max_active_tasks_value().load(std::memory_order_relaxed);
+}
+
+void set_max_active_tasks(int n) {
+  max_active_tasks_value().store(n < 1 ? 1 : n, std::memory_order_relaxed);
+}
 
 namespace {
 
@@ -268,7 +282,7 @@ array eval_impl(std::vector<array> outputs, bool async) {
         cpu::eval(arr);
       }
 
-      if (scheduler::n_active_tasks() > MAX_ACTIVE_TASKS ||
+      if (scheduler::n_active_tasks() > max_active_tasks() ||
           (get_active_memory() > get_memory_limit() &&
            scheduler::n_active_tasks() > 0)) {
         // Commit any open streams

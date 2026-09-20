@@ -190,6 +190,13 @@ inline int bfs_max_width() {
   return bfs_max_width_;
 }
 
+// Maximum number of in-flight scheduler tasks (committed command buffers or
+// CPU dispatch batches) before an evaluation waits for one to complete.
+inline int max_active_tasks() {
+  static int max_active_tasks_ = get_var("MLX_MAX_ACTIVE_TASKS", 10);
+  return max_active_tasks_;
+}
+
 inline int max_ops_per_buffer(int default_value) {
   static int max_ops_per_buffer_ =
       get_var("MLX_MAX_OPS_PER_BUFFER", default_value);

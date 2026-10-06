@@ -52,10 +52,20 @@ constexpr constant metal::thread_scope thread_scope_system =
       }
     }
     // System-scope atomic load to force GPU cache refresh from SLC
+#if defined(__METAL_MEMORY_FLAGS_NONE__)
+    // The Metal 4.1 compiler added a memory flags argument to the intrinsic;
+    // the standard library passes this value when no flags are requested.
+    uint cur = __metal_atomic_load_explicit(
+        timestamp,
+        int(metal::memory_order_relaxed),
+        __METAL_MEMORY_SCOPE_SYSTEM__,
+        __METAL_MEMORY_FLAGS_NONE__);
+#else
     uint cur = __metal_atomic_load_explicit(
         timestamp,
         int(metal::memory_order_relaxed),
         __METAL_MEMORY_SCOPE_SYSTEM__);
+#endif
     if (cur >= value) {
       return;
     }
